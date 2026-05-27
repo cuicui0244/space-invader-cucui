@@ -1,0 +1,98 @@
+
+<div style="padding:1.5rem;font-family:monospace;text-align:center">
+  <canvas id="c192" width="192" height="192" style="display:none"></canvas>
+  <canvas id="c512" width="512" height="512" style="display:none"></canvas>
+
+  <div style="display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem">
+    <div>
+      <canvas id="preview192" width="192" height="192" style="border-radius:24px;border:2px solid #f5a623"></canvas>
+      <div style="color:#f5a623;margin-top:0.5rem;font-size:13px">192 × 192 px</div>
+      <a id="dl192" download="icon-192.png" style="display:inline-block;margin-top:0.5rem;padding:8px 20px;background:#f5a623;color:#1a1a2e;border-radius:8px;font-weight:bold;font-size:13px;text-decoration:none;cursor:pointer">⬇ Télécharger</a>
+    </div>
+    <div>
+      <canvas id="preview512" width="96" height="96" style="border-radius:16px;border:2px solid #f5a623"></canvas>
+      <div style="color:#f5a623;margin-top:0.5rem;font-size:13px">512 × 512 px</div>
+      <a id="dl512" download="icon-512.png" style="display:inline-block;margin-top:0.5rem;padding:8px 20px;background:#f5a623;color:#1a1a2e;border-radius:8px;font-weight:bold;font-size:13px;text-decoration:none;cursor:pointer">⬇ Télécharger</a>
+    </div>
+  </div>
+  <div id="status" style="color:#888;font-size:12px">Génération en cours...</div>
+</div>
+
+<script>
+const svgStr = `<svg viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
+  <rect x="140" y="140" width="400" height="400" rx="80" fill="#1a1a2e"/>
+  <ellipse cx="340" cy="310" rx="55" ry="75" fill="#f5a623"/>
+  <rect x="310" y="260" width="18" height="50" rx="4" fill="#1a1a2e"/>
+  <rect x="352" y="260" width="18" height="50" rx="4" fill="#1a1a2e"/>
+  <rect x="310" y="320" width="18" height="40" rx="4" fill="#1a1a2e"/>
+  <rect x="352" y="320" width="18" height="40" rx="4" fill="#1a1a2e"/>
+  <ellipse cx="340" cy="235" rx="38" ry="38" fill="#f5a623"/>
+  <circle cx="325" cy="228" r="10" fill="#1a1a2e"/>
+  <circle cx="355" cy="228" r="10" fill="#1a1a2e"/>
+  <circle cx="325" cy="228" r="5" fill="#e74c3c"/>
+  <circle cx="355" cy="228" r="5" fill="#e74c3c"/>
+  <line x1="320" y1="205" x2="305" y2="190" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
+  <line x1="360" y1="205" x2="375" y2="190" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="303" cy="188" r="4" fill="#f5a623"/>
+  <circle cx="377" cy="188" r="4" fill="#f5a623"/>
+  <ellipse cx="265" cy="290" rx="50" ry="22" fill="#c8e6ff" fill-opacity="0.85" transform="rotate(-30 265 290)"/>
+  <ellipse cx="415" cy="290" rx="50" ry="22" fill="#c8e6ff" fill-opacity="0.85" transform="rotate(30 415 290)"/>
+  <ellipse cx="270" cy="330" rx="35" ry="15" fill="#c8e6ff" fill-opacity="0.6" transform="rotate(-20 270 330)"/>
+  <ellipse cx="410" cy="330" rx="35" ry="15" fill="#c8e6ff" fill-opacity="0.6" transform="rotate(20 410 330)"/>
+  <line x1="310" y1="345" x2="295" y2="365" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="340" y1="350" x2="340" y2="372" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="370" y1="345" x2="385" y2="365" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round"/>
+  <ellipse cx="340" cy="400" rx="18" ry="25" fill="#e67e22"/>
+  <ellipse cx="340" cy="420" rx="10" ry="8" fill="#1a1a2e"/>
+  <polygon points="340,438 332,425 348,425" fill="#e67e22"/>
+  <circle cx="215" cy="430" r="6" fill="#f5a623" fill-opacity="0.7"/>
+  <circle cx="465" cy="430" r="6" fill="#f5a623" fill-opacity="0.7"/>
+  <circle cx="200" cy="400" r="4" fill="#f5a623" fill-opacity="0.5"/>
+  <circle cx="480" cy="410" r="4" fill="#f5a623" fill-opacity="0.5"/>
+  <text x="340" y="530" text-anchor="middle" font-family="monospace" font-size="22" font-weight="bold" fill="#f5a623" letter-spacing="3">FRELON</text>
+  <text x="340" y="554" text-anchor="middle" font-family="monospace" font-size="14" fill="#c8e6ff" letter-spacing="5">INVADERS</text>
+</svg>`;
+
+function drawToCanvas(canvas, size, preview) {
+  return new Promise(resolve => {
+    const blob = new Blob([svgStr], {type:'image/svg+xml'});
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,size,size);
+      ctx.drawImage(img, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      if (preview) {
+        const pCtx = preview.getContext('2d');
+        pCtx.clearRect(0,0,preview.width,preview.height);
+        pCtx.drawImage(canvas, 0, 0, preview.width, preview.height);
+      }
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.src = url;
+  });
+}
+
+(async () => {
+  try {
+    const c192 = document.getElementById('c192');
+    const c512 = document.getElementById('c512');
+    const p192 = document.getElementById('preview192');
+    const p512 = document.getElementById('preview512');
+
+    const [url192, url512] = await Promise.all([
+      drawToCanvas(c192, 192, p192),
+      drawToCanvas(c512, 512, p512)
+    ]);
+
+    document.getElementById('dl192').href = url192;
+    document.getElementById('dl512').href = url512;
+    document.getElementById('status').textContent = '✅ Prêt ! Clique sur Télécharger pour chaque taille.';
+    document.getElementById('status').style.color = '#27ae60';
+  } catch(e) {
+    document.getElementById('status').textContent = '❌ Erreur : ' + e.message;
+    document.getElementById('status').style.color = '#e74c3c';
+  }
+})();
+</script>
